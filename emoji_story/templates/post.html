@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- 内容展示区域 -->
+    <blockquote>
+        <blockquote class="card shadow-sm">
+            <div class="card-header text-left h3">
+                {{ post.emoji|safe }}
+            </div>
+            <div class="card-body">
+                <blockquote class="blockquote mb-0">
+                    <p class="small" style="text-align: justify">{{ post.story }}</p>
+                    <br>
+                    <footer class="small blockquote-footer text-end">{{ post.name }}
+                        <small class="badge text-muted bg-light align-middle">
+                            {{ moment(post.time).fromNow(refresh=True) }}
+                        </small>
+                    </footer>
+                </blockquote>
+            </div>
+            <!-- 赞，评按钮 -->
+            <div class="card-footer bg-transparent border-light">
+                <div class="btn-group container-fluid" id={{ post.id }} role="group" aria-label="Interaction">
+                    <form type="button" onclick="likePost(this)" class="btn bg-transparent text-muted col-4">
+                        {% if post.id not in like_list %}
+                            <i class="bi bi-hand-thumbs-up"></i>
+                        {% else %}
+                            <i class="bi bi-hand-thumbs-up-fill text-danger"></i>
+                        {% endif %}
+                        <input type="hidden" id="csrf_token" value="{{ csrf_token() }}"/>
+                        <text> {{ post.like }}</text>
+                    </form>
+                    <button type="button" onclick="location.reload()" class="btn text-secondary col-4">
+                        <i class="bi bi-chat-dots"></i> comment ({{ post.comment|length }})
+                    </button>
+                </div>
+
+                <!-- 评论提交表格 -->
+                <form method="post">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        {{ form.body.label }}<br>
+                        {{ form.body(class='form-control', oninput='autosave()') }}
+                    </div>
+                    {% if form.body.errors %}
+                        {% for message in form.body.errors %}
+                            <small class="small text-danger">{{ message }}</small><br>
+                        {% endfor %}
+                    {% endif %}
+                    <br>
+                    <div class="row">
+                        {% if current_user.is_authenticated %}
+                            <div class="col d-grid">
+                                {{ form.submit(class='btn btn-danger') }}
+                            </div>
+                        {% else %}
+
+                            <!-- Button trigger modal -->
+                            <div class=" col d-grid">
+                                <button type="button" class=" btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#exampleModal">
+                                    Send!
+                                </button>
+                            </div>
+                            <!-- Modal -->
+                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                                 aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <h6 class="modal-body text-muted mt-3">
+                                            You have to log in or sign up to summit.
+                                        </h6>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-light text-danger"
+                                                    data-bs-dismiss="modal">
+                                                Cancel
+                                            </button>
+                                            <div>
+                                                {{ form.submit(class='btn btn-light text-danger fw-bold', value='Log In / Sign Up') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <br>
+                </form>
+
+                <!-- 评论展示表格 -->
+                {% if post.comment|length ==0 %}
+                    <div class="container-fluid">
+                        <p class="small text-muted text-center">No comment yet. Why not be the first one to comment?</p>
+                    </div>
+                {% else %}
+                    <div class="container-fluid mt-3">
+                        {% for _comment in post.comment|sort(attribute='time', reverse=True) %}
+                            <div class="row">
+                                <p class="col text-secondary"
+                                   style="background-color: aliceblue">{{ _comment.author_name }}:</p>
+                                <p class="small text-secondary col text-end"
+                                   style="background-color: aliceblue">{{ moment(_comment.time).format('LL LT') }}</p>
+                            </div>
+                            <div class="row">
+                                <p class="col" style="text-align: justify">{{ _comment.body }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </blockquote>
+
+    </blockquote>
+
+{% endblock %}

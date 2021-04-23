@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block bar %}
+{% endblock bar %}
+
+{% block content %}
+    <div class="container">
+        <div class="card shadow mt-5">
+            <div class="card-header">
+                <ul class="nav nav-pills justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link active text-danger bg-light" href={{ url_for('user.login') }}>Log In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-muted" href={{ url_for('user.signup') }}>Sign Up</a>
+                </ul>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.csrf_token }}
+                    <div class="form-floating mb-3">
+                        {{ form.email(class="form-control") }}
+                        <label>{{ form.email.label }}</label>
+                        {% if form.email.errors %}
+                            {% for message in form.email.errors %}
+                                <small class="small text-danger">{{ message }}</small><br>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="form-floating mb-3">
+                        {{ form.password(class="form-control") }}
+                        <label>{{ form.password.label }}</label>
+                        {% if form.password.errors %}
+                            {% for message in form.password.errors %}
+                                <small class="small text-danger">{{ message }}</small><br>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="form-check mb-3">
+                        {{ form.remember(class="form-check-input", checked=True) }}
+                        <label>{{ form.remember.label }}</label>
+                    </div>
+                    <div class="col d-grid">
+                        {{ form.submit(class='btn btn-light text-danger fw-bold') }}
+                    </div>
+                </form>
+                <div class="text-center small mt-3">
+                    <a href="{{ url_for('user.forget_pwd') }}" class="text-muted">Forget Password?</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock content %}

@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div>
+        <!-- Emoji展示区域 -->
+        <h6 class="text-muted">Use your imagination and creativity</h6>
+        <h6 class="mb-3">make up a story with the
+            <mark>EMOJI</mark>
+            below:
+        </h6>
+        <h1 class="text-center" id="emoji_str"></h1>
+        <br>
+
+        <!-- 内容提交表格 -->
+        <form method="post" id="story-post">
+            {{ form.csrf_token }}
+            <div class="form-group">
+                <div class="row mb-2">
+                    {{ form.story.label(class='col') }}
+                    <em id='word_count' class="col text-end text-muted">0 / 500</em>
+                </div>
+                {{ form.story(class='form-control', rows='5', oninput='autoSave()') }}
+            </div>
+            {% if form.story.errors %}
+                {% for message in form.story.errors %}
+                    <small class="small text-danger">{{ message }}</small><br>
+                {% endfor %}
+            {% endif %}
+        </form>
+        <br>
+        <div class="row">
+            <div class="col d-grid">
+                <button class="btn btn-secondary" onclick="refreshEmoji()">Refresh</button>
+            </div>
+            {% if current_user.is_authenticated %}
+                <div class="col d-grid">
+                    {{ form.submit(class='btn btn-danger', form="story-post") }}
+                </div>
+            {% else %}
+
+                <!-- Button trigger modal -->
+                <div class=" col d-grid">
+                    <button type="button" class=" btn btn-danger" data-bs-toggle="modal"
+                            data-bs-target="#exampleModal">
+                        Summit
+                    </button>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                     aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <h6 class="modal-body text-muted mt-3">
+                                You have to log in or sign up to summit.
+                            </h6>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-danger" data-bs-dismiss="modal">
+                                    Cancel
+                                </button>
+                                <div>
+                                    {{ form.submit(class='btn btn-light text-danger fw-bold', value='Log In / Sign Up') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        <br>
+    </div>
+
+    <!-- 内容展示区域 -->
+    <blockquote>
+        <h5 class="text-muted" style="text-indent: 3mm">
+            Read more ({{ pagination.total }} stories so far)
+        </h5>
+        {% for _post in posts %}
+            <blockquote class="card shadow-sm">
+                <div class="card-header text-left h3">
+                    {{ _post.emoji|safe }}
+                </div>
+                <div class="card-body">
+                    <blockquote class="blockquote mb-0">
+                        <p class="small" style="text-align: justify">{{ _post.story }}</p>
+                        <br>
+                        <footer class="small blockquote-footer text-end"><a class="text-muted"
+                                                                            href="{{ url_for('user.people', username=_post.name) }}">{{ _post.name }}</a>
+                            <small class="badge text-muted bg-light align-middle">
+                                {{ moment(_post.time).fromNow(refresh=True) }}
+                            </small>
+                        </footer>
+                    </blockquote>
+                </div>
+                <!-- 赞，评 -->
+                <div class="card-footer bg-transparent border-light">
+                    <div class="btn-group container-fluid" id={{ _post.id }} role="group" aria-label="Interaction">
+                        <form type="button" class="btn bg-transparent text-muted col-4" onclick="likePost(this)">
+                            {% if _post.id not in like_list %}
+                                <i class="bi bi-hand-thumbs-up"></i>
+                            {% else %}
+                                <i class="bi bi-hand-thumbs-up-fill text-danger"></i>
+                            {% endif %}
+                            <input type="hidden" id="csrf_token" value="{{ csrf_token() }}"/>
+                            <text> {{ _post.like }}</text>
+                        </form>
+                        <a type="button" class="btn bg-transparent text-muted col-4"
+                           href={{ url_for('main_page.post', post_id=_post.id) }}>
+                            <i class="bi bi-chat-dots"></i> comment ({{ _post.comment|length }})
+                        </a>
+                    </div>
+                </div>
+            </blockquote>
+        {% endfor %}
+    </blockquote>
+
+    <!-- 页码区域 -->
+    <nav aria-label="page">
+        <ul class="pagination pagination-sm justify-content-center">
+            <!-- 定义previous 按钮-->
+            {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link text-danger" href="{{ url_for(request.endpoint, page=pagination.prev_num) }}"
+                       tabindex="-1"
+                       aria-disabled="false">&laquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">&laquo;</a>
+                </li>
+            {% endif %}
+
+            <!-- 定义页码按钮-->
+            {% for _page in pagination.iter_pages() %}
+                {% if _page == pagination.page %}
+                    <li class="page-item" aria-current="page">
+                        <a class="page-link bg-danger text-light" href="#">{{ _page }}</a>
+                    </li>
+                {% elif not _page %}
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#">...</a>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link text-danger"
+                           href="{{ url_for(request.endpoint, page=_page) }}">{{ _page }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            <!-- 定义Next按钮-->
+            {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link text-danger" href="{{ url_for(request.endpoint, page=pagination.next_num) }}"
+                       tabindex="-1"
+                       aria-disabled="false">&raquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">&raquo;</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock content %}

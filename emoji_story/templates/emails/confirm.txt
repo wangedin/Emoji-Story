@@ -1,0 +1,3 @@
+please copy the link below to your browser:
+
+{{url_for('email.confirm', token=token, _external=True)}}

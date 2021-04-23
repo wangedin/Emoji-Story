@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <p class="display-6">Account</p>
+    <table class="table table-striped table-borderless align-middle">
+        <tbody>
+        <tr>
+            <td class="text-end fw-bold">Email</td>
+            <td colspan="2">
+                {% if current_user.confirmed %}
+                    {{ current_user.email }} <i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}
+                    {{ current_user.email }}
+                    <form method="post" action="{{ url_for('email.resend_confirm_email') }}">
+                        {{ confirm_form.csrf_token }}
+                        {{ confirm_form.submit(class='btn btn-sm btn-danger text-light mt-2') }}
+                    </form>
+                {% endif %}
+            </td>
+        <tr>
+            <td class="text-end fw-bold">Username</td>
+            <td colspan="2">{{ current_user.username }}</td>
+        </tr>
+        <tr>
+            <td class="text-end fw-bold">Password</td>
+            <td colspan="2">
+                <a class="btn btn-sm btn-danger" type="button" href="{{ url_for('user.change_pwd') }}">
+                    Change
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td class="text-end fw-bold">Profile Photo</td>
+            <td class="row">
+                <div class="col text-center">
+                    <img src="{{ url_for('main_page.get_image', filename=current_user.photo) }}" alt="profile photo"
+                         class="shadow rounded-circle" height="80" width="80">
+                </div>
+                <div class="col">
+                    <form method="post" id='profile_photo' enctype="multipart/form-data">
+                        {{ profile_photo_form.csrf_token }}
+                        <p>{{ profile_photo_form.profile_photo }}</p>
+                        <p>{{ profile_photo_form.submit_profile_photo(class="btn btn-sm btn-danger text-light") }}</p>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <p class="display-6">Profile</p>
+    <form method="post">
+        {{ profile_form.csrf_token }}
+        <table class="table table-borderless align-middle">
+            <tbody>
+            <tr>
+                <td>
+                    <label for="bio" class="fw-bold">Bio</label>
+                </td>
+                <td>
+                    <textarea class="form-control" id="bio" name="bio">{{ current_user.bio }}</textarea>
+                </td>
+            <tr>
+                <td colspan="2" class="text-center">
+                    {{ profile_form.submit_profile(class='form-control, btn btn-danger btn-sm text-light') }}
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </form>
+{% endblock %}

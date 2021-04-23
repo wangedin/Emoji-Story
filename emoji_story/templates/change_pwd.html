@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <h5>Change Password</h5>
+    <form method="post">
+        {{ password_form.csrf_token }}
+        <div class="form-floating mb-3">
+            {{ password_form.old_pwd(class="form-control") }}
+            <label>{{ password_form.old_pwd.label }}<small class="text-muted"></small></label>
+            {% if password_form.old_pwd.errors %}
+                {% for message in password_form.old_pwd.errors %}
+                    <small class="small text-danger">{{ message }}</small><br>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-floating mb-3">
+            {{ password_form.new_pwd(class="form-control") }}
+            <label>{{ password_form.new_pwd.label }}<small class="text-muted"> (at least 8
+                characters)</small></label>
+            {% if password_form.new_pwd.errors %}
+                {% for message in password_form.new_pwd.errors %}
+                    <small class="small text-danger">{{ message }}</small><br>
+                {% endfor %}
+            {% endif %}
+        </div>
+        <div class="form-floating mb-3">
+            {{ password_form.confirm_pwd(class="form-control") }}
+            <label>{{ password_form.confirm_pwd.label }}</label>
+        </div>
+        <div class="col d-grid">
+            {{ password_form.submit(class='btn btn-danger text-light fw-bold') }}
+        </div>
+    </form>
+
+{% endblock %}
