@@ -9,7 +9,6 @@ import click
 import random
 
 from flask import Flask
-
 from emoji_story.blueprints.email import email_bp
 from emoji_story.blueprints.main_page import main_page_bp
 from emoji_story.blueprints.user import user_bp
