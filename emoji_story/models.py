@@ -47,5 +47,5 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.Text)
     time = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-    author_name = db.Column(db.Integer, db.ForeignKey('author.username'))
+    author_name = db.Column(db.String, db.ForeignKey('author.username'))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
