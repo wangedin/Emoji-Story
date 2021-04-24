@@ -7,7 +7,6 @@ from threading import Thread
 from PIL import Image
 from flask import render_template, make_response, flash, request, redirect, url_for, current_app
 from flask_login import current_user, login_required
-from flask_mail import Message
 from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
@@ -69,12 +68,6 @@ def redirect_back(default='main_page.index', **kwargs):
     return redirect(url_for(default, **kwargs))
 
 
-#  邮件发送函数
-def send_mail(subject, to, template, **kwargs):
-    message = Message(subject, recipients=[to])
-    message.body = render_template(template + '.txt', **kwargs)
-    message.html = render_template(template + '.html', **kwargs)
-    mail.send(message)
 
 
 #  生成令牌函数
@@ -85,13 +78,7 @@ def generate_token(user, operation, expire_in=None, **kwargs):
     return s.dumps(data)
 
 
-#  发送确认邮件函数
-def send_confirm_email(user, token, to=None):
-    send_mail(subject='Email Confirm',
-              to=to or user.email,
-              template='emails/confirm',
-              user=user,
-              token=token)
+
 
 
 #  验证和解析令牌函数
@@ -114,15 +101,6 @@ def validate_token(user, token, operation, new_password=None):
         return False
     db.session.commit()
     return True
-
-
-#  发送重置密码邮件函数
-def send_reset_pwd_email(user, token, to=None):
-    send_mail(subject='Reset Your Password',
-              to=to or user.email,
-              template='emails/reset_pwd',
-              user=user,
-              token=token)
 
 
 #  头像图片处理

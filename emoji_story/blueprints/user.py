@@ -11,9 +11,10 @@ from emoji_story.extensions import db
 from emoji_story.forms import LoginForm, DeleteStoryForm, SignUpForm, \
     ChangePwdForm, ConfirmEmailForm, ForgetPwdForm, ResetPwdForm, ProfileForm, ProfilePhotoForm
 from emoji_story.models import Post, Author
-from emoji_story.utils import send_confirm_email, generate_token, Operations, send_reset_pwd_email, \
+from emoji_story.utils import generate_token, Operations, \
     validate_token, \
     clipResizeImg, random_filename, redirect_back
+from emoji_story.blueprints.email import send_confirm_email, send_reset_pwd_email
 
 user_bp = Blueprint('user', __name__)
 
