@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 gunicorn = "*"
 psycopg2 = '*'
+click = '7.1.2'
 
 [dev-packages]
 
