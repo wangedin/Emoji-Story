@@ -47,7 +47,7 @@ class DevelopmentConfig(BaseConfig):
 class TestingConfig(BaseConfig):
     TESTING = True
     WTF_CSRF_ENABLED = False
-    SQLALCHEMY_DATABASE_URI = 'sqlite:////Users/wangwang/Library/Application Support/Postgres/var-13'  # in-memory database
+    SQLALCHEMY_DATABASE_URI = "sqlite:////Users/wangwang/Library/Application Support/Postgres/var-13/data.db"  # in-memory database
 
 
 class ProductionConfig(BaseConfig):

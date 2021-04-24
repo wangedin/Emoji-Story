@@ -21,7 +21,7 @@ from emoji_story.utils import Emoji
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
-def create_app(config_name='production'):
+def create_app(config_name=None):
     if config_name is None:
         config_name = os.getenv('FLASK_CONFIG', 'development')
 
