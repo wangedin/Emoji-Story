@@ -8,4 +8,4 @@ if os.path.exists(dotenv_path):
 
 from emoji_story import create_app
 
-app = create_app('testing')
+app = create_app('production')
