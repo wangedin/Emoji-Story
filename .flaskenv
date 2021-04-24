@@ -1,2 +1,2 @@
 FLASK_APP=emoji_story
-FLASK_ENV=production
+FLASK_ENV=development
