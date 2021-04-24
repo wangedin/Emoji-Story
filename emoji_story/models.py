@@ -25,7 +25,7 @@ class Post(db.Model):
 class Author(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String, unique=True)
-    username = db.Column(db.String)
+    username = db.Column(db.String, unique=True)
     confirmed = db.Column(db.Boolean, default=False)
     pwd_hash = db.Column(db.String(128))
     like = db.Column(db.String, default=json.dumps({'like_post': []}))
