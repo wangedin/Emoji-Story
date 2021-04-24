@@ -11,9 +11,8 @@ from flask_mail import Message
 from itsdangerous import BadSignature, SignatureExpired
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
-from emoji_story import db
 from emoji_story.decorators import confirm_required
-from emoji_story.extensions import mail
+from emoji_story.extensions import mail, db
 from emoji_story.models import Post
 from emoji_story.settings import Operations
 

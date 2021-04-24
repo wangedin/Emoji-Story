@@ -7,14 +7,13 @@ from flask import flash, redirect, url_for, render_template, request, Blueprint,
     current_app
 from flask_login import login_user, current_user, login_required, logout_user
 
-from emoji_story import db
+from emoji_story.extensions import db
 from emoji_story.forms import LoginForm, DeleteStoryForm, SignUpForm, \
     ChangePwdForm, ConfirmEmailForm, ForgetPwdForm, ResetPwdForm, ProfileForm, ProfilePhotoForm
 from emoji_story.models import Post, Author
-from emoji_story.utils import redirect_back
 from emoji_story.utils import send_confirm_email, generate_token, Operations, send_reset_pwd_email, \
     validate_token, \
-    clipResizeImg, random_filename
+    clipResizeImg, random_filename, redirect_back
 
 user_bp = Blueprint('user', __name__)
 

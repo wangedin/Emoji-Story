@@ -4,7 +4,7 @@ from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from emoji_story import db
+from emoji_story.extensions import db
 
 
 class Post(db.Model):

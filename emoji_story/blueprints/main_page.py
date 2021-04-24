@@ -5,7 +5,7 @@ import json
 from flask import flash, render_template, make_response, request, Blueprint, send_from_directory, jsonify, current_app
 from flask_login import current_user
 
-from emoji_story import db
+from emoji_story.extensions import db
 from emoji_story.forms import StoryForm, CommentForm
 from emoji_story.models import Post, Author, Comment
 from emoji_story.utils import Emoji, redirect_back, submit_post
