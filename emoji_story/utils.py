@@ -5,7 +5,7 @@ import uuid
 from threading import Thread
 
 from PIL import Image
-from flask import render_template, make_response, flash
+from flask import render_template, make_response, flash, request, redirect, url_for, current_app
 from flask_login import current_user, login_required
 from flask_mail import Message
 from itsdangerous import BadSignature, SignatureExpired
@@ -20,8 +20,6 @@ try:
     from urlparse import urlparse, urljoin
 except ImportError:
     from urllib.parse import urlparse, urljoin
-
-from flask import request, redirect, url_for, current_app
 
 
 class Emoji:
@@ -71,20 +69,12 @@ def redirect_back(default='main_page.index', **kwargs):
     return redirect(url_for(default, **kwargs))
 
 
-#  异步发送邮件函数
-def _send_async_mail(app, message):
-    with app.app_context():
-        mail.send(message)
-
-
 #  邮件发送函数
 def send_mail(subject, to, template, **kwargs):
     message = Message(subject, recipients=[to])
     message.body = render_template(template + '.txt', **kwargs)
     message.html = render_template(template + '.html', **kwargs)
-    thr = Thread(target=_send_async_mail, args=[current_app, message])
-    thr.start()
-    return thr
+    mail.send(message)
 
 
 #  生成令牌函数
