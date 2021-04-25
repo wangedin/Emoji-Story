@@ -162,10 +162,6 @@ def settings():
         # 头像图片处理
         clipResizeImg(filename=filename, dst_h=320, dst_w=320)
 
-        # 清除旧图
-        if old_filename != filename:
-            os.remove(os.path.join(current_app.config['UPLOAD_PATH'], old_filename))
-
         return redirect(url_for('user.settings'))
 
     return render_template('settings.html',
