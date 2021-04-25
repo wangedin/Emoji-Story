@@ -30,7 +30,7 @@ class Author(db.Model, UserMixin):
     pwd_hash = db.Column(db.String(128))
     like = db.Column(db.String, default=json.dumps({'like_post': []}))
     bio = db.Column(db.String(140), default='I am a very mysterious storyteller!')
-    photo = db.Column(db.String, default='default.png')
+    photo = db.Column(db.String, default='default.jpg')
 
     def set_password(self, password):
         self.pwd_hash = generate_password_hash(password)

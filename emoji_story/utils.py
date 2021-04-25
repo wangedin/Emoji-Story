@@ -2,7 +2,9 @@ import linecache
 import os.path
 import random
 import uuid
-from threading import Thread
+
+import boto3
+from boto3.session import Session
 
 from PIL import Image
 from flask import render_template, make_response, flash, request, redirect, url_for, current_app
@@ -143,10 +145,30 @@ def clipResizeImg(filename, dst_w, dst_h, qua=95):
     ratio = float(dst_w) / width
     newWidth = int(width * ratio)
     newHeight = int(height * ratio)
+
+    # 保存到本地文件夹
     newIm.resize((newWidth, newHeight), Image.ANTIALIAS).save(os.path.join(current_app.config['UPLOAD_PATH'], filename),
                                                               optimize=True,
                                                               quality=qua)
+
+    # 上传到AWS
+    session = Session(aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                      aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+                      region_name='eu-west-2')
+    s3 = session.client("s3")
+    s3.upload_file(Filename=os.path.join(current_app.config['UPLOAD_PATH'], filename),
+                   Key=filename, Bucket='emoji-story')
+
     return
+
+
+# 检测upload文件夹里是否有该用户头像文件，若无，则从aws下载
+def get_img_from_aws(user):
+    bucket_name = 'emoji-story'
+    file_name = user.photo
+    local_file_name = os.path.join(current_app.config['UPLOAD_PATH'], user.photo)
+    s3 = boto3.resource('s3')
+    s3.Object(bucket_name, file_name).download_file(local_file_name)
 
 
 # 重命名文件函数

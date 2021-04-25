@@ -2,6 +2,7 @@
 import json
 import os.path
 from datetime import timedelta
+import boto3
 
 from flask import flash, redirect, url_for, render_template, request, Blueprint, jsonify, \
     current_app
@@ -13,7 +14,7 @@ from emoji_story.forms import LoginForm, DeleteStoryForm, SignUpForm, \
 from emoji_story.models import Post, Author
 from emoji_story.utils import generate_token, Operations, \
     validate_token, \
-    clipResizeImg, random_filename, redirect_back
+    clipResizeImg, random_filename, redirect_back, get_img_from_aws
 from emoji_story.blueprints.email import send_confirm_email, send_reset_pwd_email
 
 user_bp = Blueprint('user', __name__)
@@ -61,6 +62,10 @@ def home():
         filter_by(delete=False).filter_by(author_id=current_user.get_id()). \
         paginate(page, per_page=per_page)
     posts = pagination.items
+
+    # 检测upload文件夹里是否有该用户头像文件，若无，则从aws下载
+    if not os.path.exists(os.path.join(current_app.config['UPLOAD_PATH'], current_user.photo)):
+        get_img_from_aws(current_user)
 
     return render_template('home.html',
                            pagination=pagination,
@@ -242,6 +247,9 @@ def people(username):
         filter_by(delete=False).filter_by(author_id=user.get_id()). \
         paginate(page, per_page=per_page)
     posts = pagination.items
+
+    if not os.path.exists(os.path.join(current_app.config['UPLOAD_PATH'], user.photo)):
+        get_img_from_aws(user)
 
     return render_template('people.html',
                            pagination=pagination,

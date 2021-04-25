@@ -32,15 +32,19 @@
         <tr>
             <td class="text-end fw-bold">Profile Photo</td>
             <td class="row">
-                <div class="col text-center">
+                <div class="col-4">
                     <img src="{{ url_for('main_page.get_image', filename=current_user.photo) }}" alt="profile photo"
                          class="shadow rounded-circle" height="80" width="80">
                 </div>
-                <div class="col">
+                <div class="col-8">
                     <form method="post" id='profile_photo' enctype="multipart/form-data">
                         {{ profile_photo_form.csrf_token }}
-                        <p>{{ profile_photo_form.profile_photo }}</p>
-                        <p>{{ profile_photo_form.submit_profile_photo(class="btn btn-sm btn-danger text-light") }}</p>
+                        <div class="row p-1">
+                        {{ profile_photo_form.profile_photo(style="color:transparent;") }}
+                        </div>
+                        <div class="row p-1">
+                        {{ profile_photo_form.submit_profile_photo(class="btn btn-sm btn-danger text-light", style='width: 50%;') }}
+                        </div>
                     </form>
                 </div>
             </td>
