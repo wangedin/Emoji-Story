@@ -67,7 +67,9 @@
 
 
 <main class="container-fluid" style="max-width: 640px">
-
+    <div class="alert alert-secondary small" role="alert">
+        [IMPORTANT]This is a demo so your content and account may be <strong>deleted and reset</strong> due to update!
+    </div>
     {% block flash %}
         {% for message in get_flashed_messages(with_categories=True) %}
             <div class="alert alert-{{ message[0] }}">{{ message[1] }}</div>

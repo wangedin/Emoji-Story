@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-
 from flask import flash, render_template, make_response, request, Blueprint, send_from_directory, jsonify, current_app
 from flask_login import current_user
 
@@ -9,6 +8,7 @@ from emoji_story.extensions import db
 from emoji_story.forms import StoryForm, CommentForm
 from emoji_story.models import Post, Author, Comment
 from emoji_story.utils import Emoji, redirect_back, submit_post
+from urllib.parse import unquote
 
 main_page_bp = Blueprint('main_page', __name__)
 
@@ -20,7 +20,8 @@ def index():
 
     tempstory = request.cookies.get('tempstory')
     if tempstory:
-        form.story.data = tempstory
+        form.story.data = unquote(tempstory)
+        print(form.story.data)
 
     if current_user.is_authenticated:
         like_list = json.loads(Author.query.get(current_user.get_id()).like)['like_post']
