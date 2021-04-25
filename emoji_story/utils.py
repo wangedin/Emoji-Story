@@ -2,8 +2,6 @@ import linecache
 import os.path
 import random
 import uuid
-
-import boto3
 from boto3.session import Session
 
 from PIL import Image
@@ -68,8 +66,6 @@ def redirect_back(default='main_page.index', **kwargs):
         if is_safe_url(target):
             return redirect(target)
     return redirect(url_for(default, **kwargs))
-
-
 
 
 #  生成令牌函数
@@ -167,8 +163,13 @@ def get_img_from_aws(user):
     bucket_name = 'emoji-story'
     file_name = user.photo
     local_file_name = os.path.join(current_app.config['UPLOAD_PATH'], user.photo)
-    s3 = boto3.resource('s3')
-    s3.Object(bucket_name, file_name).download_file(local_file_name)
+    session = Session(aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                      aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+                      region_name='eu-west-2')
+    s3 = session.client("s3")
+    s3.download_file(Bucket=bucket_name,
+                     Key=file_name,
+                     Filename=local_file_name)
 
 
 # 重命名文件函数
