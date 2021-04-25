@@ -41,7 +41,7 @@
                             </footer>
                         </blockquote>
                     </div>
-                    <div class="container-fluid row">
+                    <div class="container-fluid row" id={{ post.id }}>
                         <!--  删除按钮Button trigger modal -->
                         <button type="button" class="btn bg-transparent text-muted col-4" data-bs-toggle="modal"
                                 data-bs-target="#exampleModal">
@@ -59,7 +59,7 @@
                         </form>
                         <a type="button" href="{{ url_for('main_page.post', post_id=post.id) }}"
                            class="btn text-secondary col-4">
-                            <i class="bi bi-chat-dots"></i> comment ({{ post.comment|length }})
+                            <i class="bi bi-chat-dots"></i> {{ post.comment|length }}
                         </a>
                     </div>
                     <!-- Modal -->

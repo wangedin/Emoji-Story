@@ -40,9 +40,9 @@
                                 </footer>
                             </blockquote>
                         </div>
-                        <div class="container-fluid row  text-center">
+                        <div class="container-fluid row text-center">
                             <!--  赞，评按钮 -->
-                            <div class="col">
+                            <div class="col" id={{ post.id }}>
                                 <form type="button" onclick="likePost(this)" class="btn bg-transparent text-muted col">
                                     {% if post.id not in like_list %}
                                         <i class="bi bi-hand-thumbs-up"></i>

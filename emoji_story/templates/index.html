@@ -107,7 +107,7 @@
                         </form>
                         <a type="button" class="btn bg-transparent text-muted col-4"
                            href={{ url_for('main_page.post', post_id=_post.id) }}>
-                            <i class="bi bi-chat-dots"></i> comment ({{ _post.comment|length }})
+                            <i class="bi bi-chat-dots"></i> {{ _post.comment|length }}
                         </a>
                     </div>
                 </div>
