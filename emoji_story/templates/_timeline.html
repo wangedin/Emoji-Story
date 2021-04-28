@@ -1,0 +1,41 @@
+{% for item in user_timeline %}
+    <div class="card border-secondary mb-3">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-8">
+                    <a href={{ url_for('user.people_stories', username=item.username_1) }}> {{ item.username_1 }}</a> {{ item.type }}s
+                    <a href={{ url_for('user.people_stories', username=item.username_2) }}>{{ item.username_2 }}</a>'s
+                    post:
+                </div>
+                <div class="col-4"><p
+                        class="small text-secondary text-end">{{ moment(item.time).format('LL LT') }}</p>
+                </div>
+            </div>
+            {% if item.comment %}
+                <div class="row">
+                    <div class="col"><i class="bi bi-chat-quote text-danger"></i> {{ item.comment }}</div>
+                </div>
+            {% endif %}
+        </div>
+        <div class="card-body" style="cursor:pointer;"
+             onclick="window.location.href='{{ url_for('main_page.post', post_id=item.post_id) }}'">
+            <div class="card-text">
+                <p>{{ item.post.emoji|safe }}</p>
+                <p>{{ item.post.story|safe }}
+                </p>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% if pagination.has_next %}
+    <div class="d-grid gap-2 col-6 mx-auto">
+        <button onclick="getTimeline()" id="load" next_page="{{ pagination.next_num }}" class="btn btn-danger">
+            More
+        </button>
+    </div>
+{% else %}
+    <div class='container mb-3 mt-3'><p class='text-muted text-center'>You have reached the bottom!</p></div>
+{% endif %}
+
+{{ moment.include_moment() }}
+{{ moment.locale(auto_detect=True) }}

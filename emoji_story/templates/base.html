@@ -11,6 +11,7 @@
               integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl"
               crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.4.0/font/bootstrap-icons.css">
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='custom.css') }}">
         <style>
             a[type='button'] {
                 -webkit-appearance: none;
@@ -27,6 +28,7 @@
             a {
                 text-decoration: none;
             }
+
         </style>
     {% endblock head %}
 </head>
@@ -41,12 +43,23 @@
             {% block bar %}
                 {% if current_user.is_authenticated %}
                     <div class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-light" href="#" id="navbarDropdownMenuLink"
+                    <a class="nav-link dropdown-toggle text-light" href="#" id="user-menu-dropdown"
                        role="button"
                        data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ current_user.username }}</a>
+                        {% if current_user.notification !=0 %}
+                                <i class="bi bi-bell-fill text-warning"></i> {% endif %}{{ current_user.username }}</a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-                        <li><a class="dropdown-item" href={{ url_for('user.home') }}>My Stories</a></li>
+                        <li><a class="dropdown-item"
+                               href={{ url_for('user.people_stories', username=current_user.username) }}>My Stories</a>
+                        </li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item"
+                               href={{ url_for('user.people_timeline', username=current_user.username) }}>
+                            My Timeline {% if current_user.notification !=0 %}
+                                <span class="badge bg-danger">new</span>{% endif %}</a>
+                        </li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -95,7 +108,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"
         integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.cookie.js') }}"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 <script type="text/javascript">let like_url = "{{ url_for('user.like') }}"</script>
 <script type="text/javascript">let refresh_url = "{{ url_for('main_page.refresh') }}"</script>
 <script type="text/javascript">let story_url = "{{ url_for('main_page.index') }}"</script>

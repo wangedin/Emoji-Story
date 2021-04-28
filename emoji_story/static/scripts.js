@@ -10,6 +10,22 @@ window.onload = function () {
 }
 
 
+$(document).ready(function () {
+    if ($('#timeline').length > 0) {
+        $.ajax({
+                type: 'GET',
+                url: getPath() + '/load',
+                dataType: 'html',
+                success: function (data) {
+                    $('#timeline').append(data);
+                }
+            }
+        )
+        return false
+    }
+});
+
+
 function autoSave() {
     const story_cache = document.getElementById('story').value;
     const input_length = story_cache.length;
@@ -41,14 +57,16 @@ function likePost(post) {
                 if (data.result === 'unlike') {
                     likes -= 1;
                     icon_node.setAttribute('class', "bi bi-hand-thumbs-up");
-                } else {
+                } else if (data.result === 'like') {
                     likes += 1;
                     icon_node.setAttribute('class', "bi bi-hand-thumbs-up-fill text-danger");
+                } else {
+                    alert(data.result)
                 }
                 likes_node.nodeValue = ' ' + likes.toString();
             },
             error: function (e) {
-                alert('Log in to give it a thumb up!')
+                alert('Opps! Something wrong happened!')
             }
         }
     )
@@ -71,4 +89,34 @@ function refreshEmoji() {
         }
     )
     return false
+}
+
+
+function getTimeline() {
+    $.ajax({
+            type: 'GET',
+            url: getPath() + '/load',
+            data: {'page': $('#load').attr('next_page')},
+            dataType: 'html',
+            success: function (data) {
+                $('#load').remove();
+                $('#timeline').append(data)
+            }
+        }
+    )
+    return false
+}
+
+
+function getPath() {
+    var url = document.location.toString();
+    var arrUrl = url.split("//");
+
+    var start = arrUrl[1].indexOf("/");
+    var relUrl = arrUrl[1].substring(start);//stop省略，截取从start开始到结尾的所有字符
+
+    if (relUrl.indexOf("?") !== -1) {
+        relUrl = relUrl.split("?")[0];
+    }
+    return relUrl;
 }

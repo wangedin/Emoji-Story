@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <!--  个人信息 -->
+    <div class="row">
+        <div class="col-4 pt-3">
+            <img src="{{ url_for('main_page.get_image', filename=user.photo) }}" alt="Profile Photo"
+                 class="rounded-circle img-thumbnail">
+        </div>
+        <div class="col-6 align-self-center">
+            <div class="row ps-3 align-items-center">
+                <span class="h4">{{ user.username }}</span>
+                <span><strong>{{ user.post|length }}</strong> stories</span>
+                <span class="mt-1">{{ user.bio }}</span>
+            </div>
+        </div>
+    </div>
+    <!-- 导航 -->
+    <ul class="nav nav-pills mt-5 mb-3">
+        <li class="nav-item">
+            <a class="nav-link text-danger"
+               href="{{ url_for('user.people_stories',username=user.username) }}">STORIES</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page"
+               href="{{ url_for('user.people_timeline', username=user.username) }}">TIMELINE</a>
+        </li>
+    </ul>
+    <!--  内容展示 -->
+    <div class="container" id="timeline">
+    </div>
+{% endblock content %}

@@ -21,3 +21,9 @@ def load_user(user_id):
     from emoji_story.models import Author
     user = Author.query.get(int(user_id))
     return user
+
+
+def load_post(post_id):
+    from emoji_story.models import Post
+    post = Post.query.get(int(post_id))
+    return post

@@ -40,7 +40,7 @@ class Emoji:
 @login_required
 @confirm_required
 def submit_post(form, emoji_str):
-    story = form.story.data
+    story = form.story.data.replace('\n', '<br>')
     name = current_user.username
     user_content = Post(name=name, story=story, emoji=emoji_str)
     current_user.post.append(user_content)
@@ -74,9 +74,6 @@ def generate_token(user, operation, expire_in=None, **kwargs):
     data = {'id': user.id, 'operation': operation}
     data.update(**kwargs)
     return s.dumps(data)
-
-
-
 
 
 #  验证和解析令牌函数

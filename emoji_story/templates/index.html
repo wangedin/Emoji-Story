@@ -83,10 +83,10 @@
                 </div>
                 <div class="card-body">
                     <blockquote class="blockquote mb-0">
-                        <p class="small" style="text-align: justify">{{ _post.story }}</p>
+                        <p class="small" style="text-align: justify">{{ _post.story|safe }}</p>
                         <br>
                         <footer class="small blockquote-footer text-end"><a class="text-muted"
-                                                                            href="{{ url_for('user.people', username=_post.name) }}">{{ _post.name }}</a>
+                                                                            href="{{ url_for('user.people_stories', username=_post.name) }}">{{ _post.name }}</a>
                             <small class="badge text-muted bg-light align-middle">
                                 {{ moment(_post.time).fromNow(refresh=True) }}
                             </small>
@@ -97,7 +97,7 @@
                 <div class="card-footer bg-transparent border-light">
                     <div class="btn-group container-fluid" id={{ _post.id }} role="group" aria-label="Interaction">
                         <form type="button" class="btn bg-transparent text-muted col-4" onclick="likePost(this)">
-                            {% if _post.id not in like_list %}
+                            {% if not current_user.is_authenticated or not current_user.is_like(_post) %}
                                 <i class="bi bi-hand-thumbs-up"></i>
                             {% else %}
                                 <i class="bi bi-hand-thumbs-up-fill text-danger"></i>

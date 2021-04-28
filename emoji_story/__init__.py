@@ -5,16 +5,17 @@
 """
 
 import os
-import click
 import random
 
+import click
 from flask import Flask
+
 from emoji_story.blueprints.email import email_bp
 from emoji_story.blueprints.main_page import main_page_bp
 from emoji_story.blueprints.user import user_bp
 from emoji_story.extensions import db, moment, login_manager, csrf, mail
+from emoji_story.models import Author, Post, Comment, Like, Timeline
 from emoji_story.settings import config
-from emoji_story.models import Author, Post, Comment
 from emoji_story.utils import Emoji
 
 basedir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
@@ -76,7 +77,8 @@ def register_commands(app):
         admin = Author(
             email='admin@admin.com',
             username='Admin',
-            bio=fake.text(max_nb_chars=130)
+            bio=fake.text(max_nb_chars=130),
+            confirmed=True
         )
         admin.set_password('12345678')
         db.session.add(admin)
@@ -103,15 +105,15 @@ def register_commands(app):
             db.session.add(user)
 
             for j in range(5):
-                record = Post(
+                post = Post(
                     name=user.username,
                     story=fake.paragraph(nb_sentences=5),
                     time=fake.date_time_this_year(),
                     emoji=Emoji.get(),
                     like=random.randint(1, 1000)
                 )
-                db.session.add(record)
-                user.post.append(record)
+                db.session.add(post)
+                user.post.append(post)
 
                 comment = Comment(
                     body=fake.paragraph(nb_sentences=5),
@@ -119,8 +121,36 @@ def register_commands(app):
                 )
                 db.session.add(comment)
                 user.comment.append(comment)
-                record.comment.append(comment)
+                post.comment.append(comment)
 
         db.session.commit()
+
+        posts = Post.query.all()
+        users = Author.query.all()
+        for user in users:
+            for post in posts:
+                like = Like(liker_id=user.id,
+                            liked_id=post.id,
+                            timestamp=fake.date_time_this_year())
+                like_timeline = Timeline(time=like.timestamp,
+                                         type='like',
+                                         post_id=post.id,
+                                         username_1=user.username,
+                                         username_2=post.name)
+                comment = Comment(body=fake.text(max_nb_chars=130),
+                                  time=fake.date_time_this_year(),
+                                  author_name=user.username,
+                                  post_id=post.id)
+                comment_timeline = Timeline(time=like.timestamp,
+                                            type='comment',
+                                            post_id=post.id,
+                                            username_1=user.username,
+                                            username_2=post.name,
+                                            comment=comment.body)
+                db.session.add(like)
+                db.session.add(like_timeline)
+                db.session.add(comment)
+                db.session.add(comment_timeline)
+                db.session.commit()
 
         click.echo('Created %d fake messages.' % count)

@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
-import json
 import os.path
 from datetime import timedelta
-import boto3
 
 from flask import flash, redirect, url_for, render_template, request, Blueprint, jsonify, \
     current_app
 from flask_login import login_user, current_user, login_required, logout_user
+from sqlalchemy import or_
 
+from emoji_story.blueprints.email import send_confirm_email, send_reset_pwd_email
 from emoji_story.extensions import db
 from emoji_story.forms import LoginForm, DeleteStoryForm, SignUpForm, \
     ChangePwdForm, ConfirmEmailForm, ForgetPwdForm, ResetPwdForm, ProfileForm, ProfilePhotoForm
-from emoji_story.models import Post, Author
+from emoji_story.models import Post, Author, Timeline
 from emoji_story.utils import generate_token, Operations, \
     validate_token, \
     clipResizeImg, random_filename, redirect_back, get_img_from_aws
-from emoji_story.blueprints.email import send_confirm_email, send_reset_pwd_email
 
 user_bp = Blueprint('user', __name__)
 
@@ -45,46 +44,16 @@ def login():
     return render_template('login.html', form=form)
 
 
-@user_bp.route('/home')
-@login_required
-def home():
-    form = DeleteStoryForm()
-
-    if current_user.is_authenticated:
-        like_list = json.loads(Author.query.get(current_user.get_id()).like)['like_post']
-    else:
-        like_list = []
-
-    page = request.args.get('page', 1, type=int)
-    per_page = 15  # 每页数量
-    #  从数据库读取用户生成内容列表，并倒序
-    pagination = Post.query.order_by(Post.time.desc()). \
-        filter_by(delete=False).filter_by(author_id=current_user.get_id()). \
-        paginate(page, per_page=per_page)
-    posts = pagination.items
-
-    # 检测upload文件夹里是否有该用户头像文件，若无，则从aws下载
-    if not os.path.exists(os.path.join(current_app.config['UPLOAD_PATH'], current_user.photo)):
-        get_img_from_aws(current_user)
-
-    return render_template('home.html',
-                           pagination=pagination,
-                           form=form,
-                           posts=posts,
-                           like_list=like_list,
-                           )
-
-
 @user_bp.route('/delete/<int:delete_id>', methods=['POST'])
 @login_required
 def delete_story(delete_id):
     form = DeleteStoryForm()
     if form.validate_on_submit():
-        delet_post = Post.query.get(delete_id)
-        delet_post.delete = True
+        delete_post = Post.query.get(delete_id)
+        db.session.delete(delete_post)
         db.session.commit()
         flash('This story has been deleted.', 'success')
-    return redirect(url_for('user.home'))
+    return redirect(url_for('user.people_stories'))
 
 
 @user_bp.route('/logout')
@@ -108,31 +77,37 @@ def signup():
         send_confirm_email(user=new_user, token=generate_token(user=new_user, operation=Operations.CONFIRM))
         flash('Well done, {}! Your account has been created! Please check your inbox to confirm your email.'.format(
             username),
-              'success')
+            'success')
         login_user(new_user)
         return redirect(url_for('main_page.index'))
     return render_template('signup.html', form=form)
 
 
 @user_bp.route('/like', methods=['POST'])
-@login_required
 def like():
-    import json
     post_id = int(request.get_json()['post_id'])
     post = Post.query.get(post_id)
-    user = Author.query.get(current_user.get_id())
-
-    like_list = json.loads(user.like)['like_post']
-    if post_id not in like_list:
-        post.like += 1
-        like_list.append(post_id)
-        result = 'like'
+    if current_user.is_authenticated:
+        user = Author.query.get(current_user.get_id())
+        if user.is_like(post):
+            user.unlike(post)
+            result = 'unlike'
+            like_timeline = Timeline.query.filter_by(post_id=post_id,
+                                                     username_1=user.username,
+                                                     username_2=post.name).first()
+            db.session.delete(like_timeline)
+        else:
+            user.like(post)
+            result = 'like'
+            like_timeline = Timeline(type='like',
+                                     post_id=post_id,
+                                     username_1=user.username,
+                                     username_2=post.name)
+            post.user.notification += 1
+            db.session.add(like_timeline)
+        db.session.commit()
     else:
-        post.like -= 1
-        like_list.remove(post_id)
-        result = 'unlike'
-    user.like = json.dumps({'like_post': like_list})
-    db.session.commit()
+        result = 'Log in to give it a thumb up!'
     return jsonify(result=result)
 
 
@@ -150,8 +125,6 @@ def settings():
         return redirect(url_for('user.settings'))
 
     if profile_photo_form.submit_profile_photo.data and profile_photo_form.validate_on_submit():
-
-        old_filename = current_user.photo
         f = profile_photo_form.profile_photo.data
         filename = random_filename(f.filename)
         f.save(os.path.join(current_app.config['UPLOAD_PATH'], filename))
@@ -226,30 +199,50 @@ def reset_pwd(token):
     return render_template('reset_pwd.html', form=form)
 
 
-@user_bp.route('/people/<username>')
-def people(username):
-    if current_user.is_authenticated:
-        like_list = json.loads(Author.query.get(current_user.get_id()).like)['like_post']
-        if current_user.username == username:
-            return redirect(url_for('user.home'))
-    else:
-        like_list = []
-
+@user_bp.route('/people/<username>/stories')
+def people_stories(username):
+    form = DeleteStoryForm()
     page = request.args.get('page', 1, type=int)
     per_page = 15  # 每页数量
     #  从数据库读取用户生成内容列表，并倒序
     user = Author.query.filter_by(username=username).first()
-    pagination = Post.query.order_by(Post.time.desc()). \
-        filter_by(delete=False).filter_by(author_id=user.get_id()). \
+    pagination = Post.query.order_by(Post.time.desc()).filter_by(author_id=user.get_id()). \
         paginate(page, per_page=per_page)
     posts = pagination.items
 
     if not os.path.exists(os.path.join(current_app.config['UPLOAD_PATH'], user.photo)):
         get_img_from_aws(user)
 
-    return render_template('people.html',
+    return render_template('people_stories.html',
                            pagination=pagination,
                            posts=posts,
-                           like_list=like_list,
-                           user=user
+                           user=user,
+                           form=form
                            )
+
+
+@user_bp.route('/people/<username>/timeline')
+def people_timeline(username):
+    user = Author.query.filter_by(username=username).first()
+    if current_user.username == username:
+        current_user.notification = 0
+        db.session.commit()
+    return render_template('people_timeline.html',
+                           user=user)
+
+
+@user_bp.route('/people/<username>/timeline/load')
+def _timeline(username):
+    user = Author.query.filter_by(username=username).first()
+    page = request.args.get('page', 1, type=int)
+    per_page = 15
+    pagination = Timeline.query.order_by(Timeline.time.desc()).filter(or_(Timeline.username_1 == user.username,
+                                                                          Timeline.username_2 == user.username)).paginate(
+        page, per_page)
+    if pagination.pages == 0:
+        return "<div class='container mb-3 mt-3'><p class='text-muted text-center'>This storyteller has no timeline yet!</p></div>"
+    user_timeline = pagination.items
+    return render_template('_timeline.html',
+                           user=user,
+                           pagination=pagination,
+                           user_timeline=user_timeline)
