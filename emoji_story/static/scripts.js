@@ -93,13 +93,18 @@ function refreshEmoji() {
 
 
 function getTimeline() {
+    let load = $('#load');
     $.ajax({
             type: 'GET',
             url: getPath() + '/load',
-            data: {'page': $('#load').attr('next_page')},
+            data: {'page': load.attr('next_page')},
             dataType: 'html',
+            beforeSend: function () {
+                load.attr('disabled', true)
+                console.log(load.parent().html())
+            },
             success: function (data) {
-                $('#load').remove();
+                load.remove();
                 $('#timeline').append(data)
             }
         }
