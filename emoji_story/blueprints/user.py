@@ -224,7 +224,7 @@ def people_stories(username):
 @user_bp.route('/people/<username>/timeline')
 def people_timeline(username):
     user = Author.query.filter_by(username=username).first()
-    if current_user.username == username:
+    if current_user.is_authenticated and current_user.username == username:
         current_user.notification = 0
         db.session.commit()
     return render_template('people_timeline.html',
